@@ -12,4 +12,4 @@ if [ $? -eq 0 ]; then
 else
     echo "程序通过"
 fi
-cat info > ../task1/step1.txt  >/dev/null 2>&1
+cat info > ../task1/step1.txt   2>&1
