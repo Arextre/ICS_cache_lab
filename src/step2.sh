@@ -9,8 +9,8 @@ gcc -g -Wall -Werror -std=c99 -m64 -O0 -o tracegen tracegen.c trans.o cachelab.c
 python driver_tans.py > info 2>&1
 cat info | grep "程序没有改进" >result 2>&1
 if [ $? -eq 0 ]; then
-    echo "程序通过"
-else
     cat info
+else
+    echo "程序通过"
 fi
 cat info > ../task2/step2.txt   2>&1
