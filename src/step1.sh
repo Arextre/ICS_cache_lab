@@ -8,9 +8,9 @@ gcc -g -Wall -Werror -std=c99 -m64 -o test-csim test-csim.c >/dev/null 2>&1
 python driver.py > info 2>&1
 cat info | grep "程序无效" >result 2>&1
 if [ $? -eq 0 ]; then
-    echo "程序通过"
-else
     cat info
+else
+    echo "程序通过"
 fi
 cd ..  >/dev/null 2>&1
 cat ./src/info > ./task1/step1.txt  >/dev/null 2>&1
