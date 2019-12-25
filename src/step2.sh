@@ -3,7 +3,6 @@ rm ./task2/* > /dev/null 2<&1
 rm ./src/trans.o  > /dev/null 2<&1
 rm ./src/test-trans  > /dev/null 2<&1
 cd ./src  > /dev/null 2<&1
-dir
 gcc -g -Wall -Werror -std=c99 -m64 -O0 -c trans.c >/dev/null 2>&1
 gcc -g -Wall -Werror -std=c99 -m64 -o test-trans test-trans.c cachelab.c trans.o  >/dev/null 2>&1
 gcc -g -Wall -Werror -std=c99 -m64 -O0 -o tracegen tracegen.c trans.o cachelab.c >/dev/null 2>&1
