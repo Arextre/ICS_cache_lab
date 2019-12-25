@@ -50,6 +50,8 @@ def main():
             resultsim = re.findall(r'(\d+)', line)
         else:
             print "%s" % (line)
+    if float(resultsim[0])<=1 :
+        print "程序无效"
 
     
     

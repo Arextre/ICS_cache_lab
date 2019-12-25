@@ -107,6 +107,8 @@ def main():
                              maxscore['trans32'] + 
                              maxscore['trans64'] +
                              maxscore['trans61'])
+    if total_score<=0.0:
+        print "程序没有改进"
     
     # Emit autoresult string for Autolab if called with -A option
     if autograde:
