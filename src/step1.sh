@@ -2,6 +2,7 @@
 rm ./task1/* > /dev/null 2<&1
 rm ./src/csim  > /dev/null 2<&1
 cd ./src  > /dev/null 2<&1
+dir
 gcc -g -Wall -m64 -o csim csim.c cachelab.c -lm >/dev/null 2>&1
 python driver.py > info 2>&1
 cat info | grep "程序没有改进" >result 2>&1
