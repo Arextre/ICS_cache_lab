@@ -6,14 +6,11 @@
  */ 
 #include <stdio.h>
 #include "cachelab.h"
-
 int is_transpose(int M, int N, int A[N][M], int B[M][N]);
+char transpose_submit_desc[] = "Transpose submission";  //请不要修改“Transpose_submission”
 
-/* 
- *transpose_submit -  这是一个解决方案转置函数，你将在实验部分评分。
- *不要更改描述字符串“Transpose submission”，因为驱动程序会搜索该字符串以标识要分级的Transpose函数。
- */
-char transpose_submit_desc[] = "Transpose submission";
+//                          请在此处添加和修改程序
+//*************************************Begin*************************************************************
 void transpose_submit(int M, int N, int A[N][M], int B[M][N])
 {
 }
@@ -69,4 +66,4 @@ int is_transpose(int M, int N, int A[N][M], int B[M][N])
     }
     return 1;
 }
-
+//******************************************End*****************************************
