@@ -10,6 +10,7 @@ cat info | grep "程序无效" >result 2>&1
 if [ $? -eq 0 ]; then
     cat info
 else
-    echo "程序通过"
+#    echo "程序通过"
+    /csim -s 1 -E 1 -b 1 -t traces/yi2.trace
 fi
 cat info > ../task1/step1.txt   2>&1
