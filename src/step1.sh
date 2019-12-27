@@ -1,6 +1,8 @@
 #!/bin/bash
 rm ./task1/* > /dev/null 2<&1
 rm ./src/csim  > /dev/null 2<&1
+rm ./src/csim-ref  > /dev/null 2<&1
+rm ./src/test-csim > /dev/null 2<&1
 cd ./src  > /dev/null 2<&1
 gcc -g -Wall -Werror -std=c99 -m64 -o csim csim.c cachelab.c -lm  >/dev/null 2>&1
 gcc -g -Wall -Werror -std=c99 -m64 -o csim-ref csim-ref.c cachelab.c -lm >/dev/null 2>&1
