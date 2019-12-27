@@ -6,7 +6,6 @@ cd ./src  > /dev/null 2<&1
 gcc -g -Wall -Werror -std=c99 -m64 -o csim csim.c cachelab.c -lm  >/dev/null 2>&1
 gcc -g -Wall -Werror -std=c99 -m64 -o test-csim test-csim.c >/dev/null 2>&1
 python driver.py > info 2>&1
-dir
 cat info | grep "程序无效" >result 2>&1
 if [ $? -eq 0 ]; then
     cat info
