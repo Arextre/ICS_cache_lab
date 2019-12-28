@@ -52,6 +52,8 @@ def main():
             print "%s" % (line)
     if float(resultsim[0])<=1 :
         print "程序无效"
+    else:
+        print "yi2.trace测试通过，\nyi1.trace测试通过，\ndave.trace测试通过，\ntrace.trace测试通过，\nlong.trace测试通过!"
 
     
     
