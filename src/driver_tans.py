@@ -109,6 +109,12 @@ def main():
                              maxscore['trans61'])
     if total_score<=0.0:
         print "程序没有改进"
+    if trans32_score >=1:
+        print "矩阵32x32转置优化完成，"
+    if trans64_score >=1:
+        print "矩阵64x64转置优化完成，"
+    if trans61_score >=1 :
+        print "矩阵61x67转置优化完成!"
     
     # Emit autoresult string for Autolab if called with -A option
     if autograde:
