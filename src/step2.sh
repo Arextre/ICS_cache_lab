@@ -12,6 +12,6 @@ cat info | grep "程序没有改进" >result 2>&1
 if [ $? -eq 0 ]; then
     cat info
 else
-    echo "程序通过"
+    tail info -n 3
 fi
 cat info > ../task2/step2.txt   2>&1
