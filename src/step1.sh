@@ -12,6 +12,6 @@ cat info | grep "程序无效" >result 2>&1
 if [ $? -eq 0 ]; then
     cat info
 else
-    echo "程序通过"
+    cat info -n 5
 fi
 cat info > ../task1/step1.txt   2>&1
