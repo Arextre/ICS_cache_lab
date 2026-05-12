@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <getopt.h>
+#include <assert.h>
 
 //                    请在此处添加代码  
 //****************************Begin*********************
@@ -21,7 +23,7 @@ char *trace_file = NULL;
 void parse_args(int argc, char **argv) {
   int opt;
   extern char *optarg;
-  while ((opt = getopt(argc, argv, "hvs:E:b:t:") != -1)) {
+  while ((opt = getopt(argc, argv, "hvs:E:b:t:")) != -1) {
     switch (opt) {
     case 'h':
       printf("Usage: %s [-hv] -s <num> -E <num> -b <num> -t <file>\n", argv[0]);
@@ -57,18 +59,19 @@ void parse_args(int argc, char **argv) {
 
 
 /* Cache definition and operations */
+typedef unsigned long address_t;
 typedef struct {
   int valid;
-  unsigned long tag;
+  address_t tag;
   unsigned long lru_counter;  // used for LRU eviction policy
 } cache_line_t;
 
 typedef cache_line_t* cache_set_t;
 typedef cache_set_t* cache_t;
-unsigned long S;
-unsigned long B;
+address_t S;
+address_t B;
+address_t set_index_mask;
 cache_t cache;
-unsigned long set_index_mask;
 unsigned long global_lru_counter = 0;
 
 void initCache() {
@@ -92,6 +95,52 @@ void freeCache() {
   free(cache);
 }
 
+void accessCache(address_t addr, int *hits, int *misses, int *evictions) {
+  address_t set_index = (addr & set_index_mask) >> b;
+  address_t tag = addr >> (s + b);
+  // pointer to the cache set
+  cache_set_t set = cache[set_index];
+  // Check for hit
+  unsigned long lru_min = (unsigned long)-1; // init to max value of unsigned long
+  int lru_index = -1;
+  for (int i = 0; i < E; ++i) {
+    if (set[i].valid && set[i].tag == tag) {
+      ++(*hits);
+      set[i].lru_counter = ++global_lru_counter;  // update LRU counter
+      return ;
+    } else if (!set[i].valid) {
+      // empty line
+      lru_min = 0;    // empty lines are considered least recently used
+      lru_index = i;
+    } else if (lru_index == -1 || set[i].lru_counter < lru_min) {
+      lru_min = set[i].lru_counter;
+      lru_index = i;
+    }
+  }
+  // Miss occurred
+  ++(*misses);
+  if (set[lru_index].valid) {
+    // Eviction needed
+    ++(*evictions);
+  }
+  set[lru_index].valid = 1;
+  set[lru_index].tag = tag;
+  set[lru_index].lru_counter = ++global_lru_counter;  // update LRU counter
+}
+
+void accessData(
+  address_t addr, address_t size,
+  int *hits, int *misses, int *evictions
+) {
+  address_t start = (addr >> b) << b;
+  address_t end = ((addr + size - 1) >> b) << b;
+  // the task presumes that accesses are aligned and do not span multiple blocks
+  assert (start == end);
+  for (address_t cur = start; cur <= end; cur += B) {
+    accessCache(cur, hits, misses, evictions);
+  }
+}
+
 int main(int argc, char **argv) {
   // initialize variables
   parse_args(argc, argv);
@@ -100,13 +149,14 @@ int main(int argc, char **argv) {
     fprintf(stderr, "Error opening trace file: %s\n", trace_file);
     exit(1);
   }
-  printf("Verbose Mode: %s\n", verbose ? "ON" : "OFF");
   if (verbose) {
+    printf("Verbose Mode: ON\n");
     printf("Set index bits (s): %d\n", s);
     printf("Lines per set (E): %d\n", E);
     printf("Block offset bits (b): %d\n", b);
     printf("Trace file: %s\n", trace_file);
   }
+  initCache();
 
   // read and process trace file
   int hits = 0, misses = 0, evictions = 0;
@@ -115,12 +165,15 @@ int main(int argc, char **argv) {
   unsigned long addr, size;
   
   while (fgets(buf, sizeof(buf), fp) != NULL) {
+
     if (buf[0] == 'I') {
+      // I operation is ignored
       if (verbose) {
         printf("Skipping instruction load: %s", buf);
       }
       continue;
     }
+
     sscanf(buf, " %c %lx,%lu", &op, &addr, &size);
     if (verbose) {
       printf("Operation: %c, Address: 0x%lx, Size: %lu\n", op, addr, size);
@@ -135,6 +188,7 @@ int main(int argc, char **argv) {
     }
   }
 
+  freeCache();
   printSummary(hits, misses, evictions); 
   return 0;
 }
