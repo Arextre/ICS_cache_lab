@@ -8,12 +8,134 @@
  * 使用函数printSummary() 打印输出，输出hits, misses and evictions 的数，这对结果评估很重要
 */
 #include "cachelab.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 //                    请在此处添加代码  
 //****************************Begin*********************
-int main()
-{   
-    
-    printSummary(0, 0, 0); //输出hit、miss和evictions数量统计 
-    return 0;
+int s, E, b, verbose;
+char *trace_file = NULL;
+
+void parse_args(int argc, char **argv) {
+  int opt;
+  extern char *optarg;
+  while ((opt = getopt(argc, argv, "hvs:E:b:t:") != -1)) {
+    switch (opt) {
+    case 'h':
+      printf("Usage: %s [-hv] -s <num> -E <num> -b <num> -t <file>\n", argv[0]);
+      printf("Options:\n");
+      printf("  -h         Print this help message.\n");
+      printf("  -v         Optional verbose flag.\n");
+      printf("  -s <num>   Number of set index bits (S = 2^s is the number of sets).\n");
+      printf("  -E <num>   Number of lines per set (associativity).\n");
+      printf("  -b <num>   Number of block offset bits (B = 2^b is the block size in bytes).\n");
+      printf("  -t <file>  Trace file.\n");
+      exit(0);
+    case 'v':
+      verbose = 1;
+      break;
+    case 's':
+      s = atoi(optarg);
+      break;
+    case 'E':
+      E = atoi(optarg);
+      break;
+    case 'b':
+      b = atoi(optarg);
+      break;
+    case 't':
+      trace_file = optarg;
+      break;
+    default:
+      fprintf(stderr, "Invalid option: -%c\n", opt);
+      exit(1);
+    }
+  }
+}
+
+
+/* Cache definition and operations */
+typedef struct {
+  int valid;
+  unsigned long tag;
+  unsigned long lru_counter;  // used for LRU eviction policy
+} cache_line_t;
+
+typedef cache_line_t* cache_set_t;
+typedef cache_set_t* cache_t;
+unsigned long S;
+unsigned long B;
+cache_t cache;
+unsigned long set_index_mask;
+unsigned long global_lru_counter = 0;
+
+void initCache() {
+  S = 1 << s;
+  B = 1 << b;
+  cache = (cache_t)malloc(S * sizeof(cache_set_t));
+  set_index_mask = (S - 1) << b;
+  for (unsigned long i = 0; i < S; ++i) {
+    cache[i] = (cache_set_t)malloc(E * sizeof(cache_line_t));
+    for (int j = 0; j < E; ++j) {
+      cache[i][j].valid = 0;
+      cache[i][j].tag = 0;
+      cache[i][j].lru_counter = 0;
+    }
+  }
+}
+
+void freeCache() {
+  for (unsigned long i = 0; i < S; ++i)
+    free(cache[i]);
+  free(cache);
+}
+
+int main(int argc, char **argv) {
+  // initialize variables
+  parse_args(argc, argv);
+  FILE *fp = fopen(trace_file, "r");
+  if (fp == NULL) {
+    fprintf(stderr, "Error opening trace file: %s\n", trace_file);
+    exit(1);
+  }
+  printf("Verbose Mode: %s\n", verbose ? "ON" : "OFF");
+  if (verbose) {
+    printf("Set index bits (s): %d\n", s);
+    printf("Lines per set (E): %d\n", E);
+    printf("Block offset bits (b): %d\n", b);
+    printf("Trace file: %s\n", trace_file);
+  }
+
+  // read and process trace file
+  int hits = 0, misses = 0, evictions = 0;
+  char buf[1024];
+  char op;
+  unsigned long addr, size;
+  
+  while (fgets(buf, sizeof(buf), fp) != NULL) {
+    if (buf[0] == 'I') {
+      if (verbose) {
+        printf("Skipping instruction load: %s", buf);
+      }
+      continue;
+    }
+    sscanf(buf, " %c %lx,%lu", &op, &addr, &size);
+    if (verbose) {
+      printf("Operation: %c, Address: 0x%lx, Size: %lu\n", op, addr, size);
+    }
+    accessData(addr, size, &hits, &misses, &evictions);
+    if (op == 'M') {
+      // M operation causes an additional access
+      accessData(addr, size, &hits, &misses, &evictions);
+    }
+    if (verbose) {
+      printf("Current hits: %d, misses: %d, evictions: %d\n", hits, misses, evictions);
+    }
+  }
+
+  printSummary(hits, misses, evictions); 
+  return 0;
 }
 //****************************End**********************#
