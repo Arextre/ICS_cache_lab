@@ -1,4 +1,0 @@
-  File "/home/mihari/codes/labs/ics/src/driver.py", line 40
-    print " 测试模拟器"
-    ^^^^^^^^^^^^^^
-SyntaxError: Missing parentheses in call to 'print'. Did you mean print(...)?
